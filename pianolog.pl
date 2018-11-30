@@ -1,6 +1,9 @@
-use_module(midi).
-use_module(wave).
+:- ensure_loaded(midi).
+:- ensure_loaded(wave).
 
+:- set_prolog_stack(global, limit(100 000 000 000)).
+
+% PLAY
 % play a sequence of notes imported from a MIDI file
 playMIDI :-
 	% convert the MIDI file into a sequence of notes
@@ -19,20 +22,28 @@ play :-
 	write("Example input: 3C 3D# 4Db"), nl,
 	read(Input),
 
+	% catch any exceptions and return an error message
 	catch(
+		% parse the user input into note values
 		parseInput(Input, Notes),
 		_, misformattedNotes),
 
+	% transpose the notes and specify the output file
 	transpose(Notes, TransposedNotes),
 	outputFile(FileName),
 
+	% generate the output file in WAV format
 	convertToWave(TransposedNotes, FileName).
+
+
 
 % ERROR HANDLING
 % outputs a Wrong Format error message and stops execution
-misformattedNotes :-
-	write("Please ensure your notes are formatted correctly. Example input: 3C 3D# 4Ab"), nl, false.
+misformattedNotes :- write("Please ensure your notes are formatted correctly. Example input: 3C 3D# 4Ab"), nl, false.
 
+
+
+% USER INPUT HANDLING
 % parseInput(Input, Notes) is true if InputArray is an array of integers that are numerical representations of each note separated by spaces in the string Input 
 parseInput(Input, Notes) :-
 	split_string(Input, " ", "", InputArray),
@@ -44,7 +55,6 @@ parseInputArray([Input|InputArray], [Note|NoteArray]) :-
 	convertToNote(Input, Note),
 	parseInputArray(InputArray, NoteArray).
 
-
 % converts a note from an atom input into an integer note value
 convertToNote(Input, Note) :-
 	% convert the input into an array of characters
@@ -55,7 +65,6 @@ convertToNote(Input, Note) :-
 	note(Letter, LetterNum),
 	% calculate the corresponding note value
 	Note is (OctNum * 12 + 12) + LetterNum.
-
 % flat (b)
 convertToNote(Input, Note) :-
 	% convert the input into an array of characters
@@ -66,7 +75,6 @@ convertToNote(Input, Note) :-
 	note(Letter, LetterNum),
 	% calculate the corresponding note value
 	Note is (OctNum * 12 + 12 - 1) + LetterNum.
-
 % sharp (#)
 convertToNote(Input, Note) :-
 	% convert the input into an array of characters
@@ -87,6 +95,8 @@ note('G', 7).
 note('A', 9).
 note('B', 11).
 
+
+
 % TRANPOSITION
 % transpose(Notes, TransposedNotes) is true if the elements of TransposedNotes are the elements of Notes transposed by the user input.
 transpose(Notes, TransposedNotes) :-
@@ -99,6 +109,8 @@ transposeNotes([], _, []).
 transposeNotes([Note|NoteArray], TransposeBy, [TransposedNote|TransposedNoteArray]) :-
 	TransposedNote is Note + TransposeBy,
 	transposeNotes(NoteArray, TransposeBy, TransposedNoteArray).
+
+
 
 % OUTPUT FILE NAME
 % allows the user to specify the name of the output file

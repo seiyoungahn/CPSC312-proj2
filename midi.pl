@@ -16,10 +16,14 @@ convertFromMIDI(Notes) :-
     unpackEvents(MIDIEvents, Notes).
 
 
+
 % ERROR HANDLING
 % outputs a Missing File error message and stops execution
 missingFile :- write("Please make sure you have specified a valid .mid file."), nl,false.
 
+
+
+% TRANSLATION FROM MIDI FILE -> NOTES
 % unpackEvents(EventArray, NoteArray) is true when NoteArray contains elements of EventArray which has note_on message
 unpackEvents([], []).
 unpackEvents([(event(_, note_off, _, _))|EventArray], NoteArray) :-
@@ -29,6 +33,9 @@ unpackEvents([(event(_, end, _, _))|EventArray], NoteArray) :-
 unpackEvents([(event(_, note_on, Note, _))|EventArray], [Note|NoteArray]) :-
     unpackEvents(EventArray, NoteArray).
     
+
+
+% PARSE MIDI FILE
 % readMIDI(FileName, Events) is true when Events is a list that contains all MIDI events in file FileName
 % each element in Events is event(time, message, key, velocity)
 readMIDI(FileName, Events) :-
@@ -36,6 +43,9 @@ readMIDI(FileName, Events) :-
     skipBytes(Stream, 22), % go to where the event starts
     getEvents(Stream, Events).
 
+
+
+% PARSE MIDI FILE HELPERS
 % getEvents(Stream, List) is true when List contains all the events that begins from the stream pointer
 getEvents(Stream, []) :-
     at_end_of_stream(Stream).
