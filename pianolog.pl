@@ -28,13 +28,17 @@ play :-
 
 	convertToWave(TransposedNotes, FileName).
 
+% ERROR HANDLING
+% outputs a Wrong Format error message and stops execution
 misformattedNotes :-
 	write("Please ensure your notes are formatted correctly. Example input: 3C 3D# 4Ab"), nl, false.
 
+% parseInput(Input, Notes) is true if InputArray is an array of integers that are numerical representations of each note separated by spaces in the string Input 
 parseInput(Input, Notes) :-
 	split_string(Input, " ", "", InputArray),
 	parseInputArray(InputArray, Notes).
 
+% parseInputArray(InputArray, NoteArray) is true if the elements of NoteArray are numerical representation of the string elements of InputArray
 parseInputArray([], []).
 parseInputArray([Input|InputArray], [Note|NoteArray]) :-
 	convertToNote(Input, Note),
@@ -74,6 +78,7 @@ convertToNote(Input, Note) :-
 	% calculate the corresponding note value
 	Note is (OctNum * 12 + 8 + 1) + LetterNum.
 
+% relation of each note in an octave and its corresponding numerical value
 note('C', 0).
 note('D', 2).
 note('E', 4).
@@ -83,18 +88,17 @@ note('A', 9).
 note('B', 11).
 
 % TRANPOSITION
-% transpose the given array of notes 
+% transpose(Notes, TransposedNotes) is true if the elements of TransposedNotes are the elements of Notes transposed by the user input.
 transpose(Notes, TransposedNotes) :-
     write("Do you want to transpose? Give a number between [-12, 12]: "), nl,
     read(TransposeBy),
     transposeNotes(Notes, TransposeBy, TransposedNotes).
 
-% transpose an array of notes given the number of semitones to tranpose by 
+% transposeNotes(Notes, TransposeBy, TransposedNotes) is true if the elements of TrnasposedNotes are the elements of Notes transposed by TransposeBy semitones
 transposeNotes([], _, []).
 transposeNotes([Note|NoteArray], TransposeBy, [TransposedNote|TransposedNoteArray]) :-
 	TransposedNote is Note + TransposeBy,
 	transposeNotes(NoteArray, TransposeBy, TransposedNoteArray).
-
 
 % OUTPUT FILE NAME
 % allows the user to specify the name of the output file
@@ -102,5 +106,3 @@ outputFile(FilePath) :-
 	write("Please choose a name for the output file."), nl,
 	read(FileName),
 	string_concat(FileName, ".wav", FilePath).
-
-

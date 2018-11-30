@@ -20,7 +20,7 @@ convertFromMIDI(Notes) :-
 % outputs a Missing File error message and stops execution
 missingFile :- write("Please make sure you have specified a valid .mid file."), nl,false.
 
-% extract the notes from the MIDI events
+% unpackEvents(EventArray, NoteArray) is true when NoteArray contains elements of EventArray which has note_on message
 unpackEvents([], []).
 unpackEvents([(event(_, note_off, _, _))|EventArray], NoteArray) :-
     unpackEvents(EventArray, NoteArray).
@@ -47,6 +47,7 @@ getEvents(Stream, [event(DeltaTime,Message,Key,Velocity)|R]) :-
     get_byte(Stream, Velocity),
     getEvents(Stream, R).
 
+% getMessage(Stream, Message) is true if Message is the midi message represented by the byte at Stream pointer 
 getMessage(Stream, note_on) :-
     peek_byte(Stream, Status),
     FirstHex is Status / 16,
@@ -62,6 +63,7 @@ getMessage(Stream, end) :-
     Status is 255, % status byte is 0xFF
     get_byte(Stream, _).
 
+% skipBytes(Stream, N) is true when the pointer of the Stream is moved by N bytes
 skipBytes(_, 0).
 skipBytes(Stream, _) :-
     at_end_of_stream(Stream).
@@ -90,6 +92,7 @@ getVLQByteList(Stream, [B|L]) :-
     get_byte(Stream, B),
     getVLQByteList(Stream, L).
 
+% convertVLQListToNum(L, N) is true if N is the decimal representation of the VLQ numbers in L 
 convertVLQListToNum([], 0).
 convertVLQListToNum([H], H).
 convertVLQListToNum([L|R], N) :-
