@@ -35,13 +35,9 @@ play :-
 	% generate the output file in WAV format
 	convertToWave(TransposedNotes, FileName).
 
-
-
 % ERROR HANDLING
 % outputs a Wrong Format error message and stops execution
 misformattedNotes :- write("Please ensure your notes are formatted correctly. Example input: 3C 3D# 4Ab"), nl, false.
-
-
 
 % USER INPUT HANDLING
 % parseInput(Input, Notes) is true if InputArray is an array of integers that are numerical representations of each note separated by spaces in the string Input 
@@ -95,8 +91,6 @@ note('G', 7).
 note('A', 9).
 note('B', 11).
 
-
-
 % TRANPOSITION
 % transpose(Notes, TransposedNotes) is true if the elements of TransposedNotes are the elements of Notes transposed by the user input.
 transpose(Notes, TransposedNotes) :-
@@ -106,11 +100,9 @@ transpose(Notes, TransposedNotes) :-
 
 % transposeNotes(Notes, TransposeBy, TransposedNotes) is true if the elements of TrnasposedNotes are the elements of Notes transposed by TransposeBy semitones
 transposeNotes([], _, []).
-transposeNotes([Note|NoteArray], TransposeBy, [TransposedNote|TransposedNoteArray]) :-
-	TransposedNote is Note + TransposeBy,
+transposeNotes([noteEvent(Note1, Time1)|NoteArray], TransposeBy, [noteEvent(Note2, Time1)|TransposedNoteArray]) :-
+	Note2 is Note1 + TransposeBy,
 	transposeNotes(NoteArray, TransposeBy, TransposedNoteArray).
-
-
 
 % OUTPUT FILE NAME
 % allows the user to specify the name of the output file

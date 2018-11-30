@@ -30,20 +30,32 @@ unpackEvents([(event(_, note_off, _, _))|EventArray], NoteArray) :-
     unpackEvents(EventArray, NoteArray).
 unpackEvents([(event(_, end, _, _))|EventArray], NoteArray) :-
     unpackEvents(EventArray, NoteArray).
-unpackEvents([(event(_, note_on, Note, _))|EventArray], [Note|NoteArray]) :-
+unpackEvents([(event(Time, note_on, Note, _))|EventArray], [noteEvent(Note,Time)|NoteArray]) :-
     unpackEvents(EventArray, NoteArray).
-    
 
 
 % PARSE MIDI FILE
 % readMIDI(FileName, Events) is true when Events is a list that contains all MIDI events in file FileName
 % each element in Events is event(time, message, key, velocity)
-readMIDI(FileName, Events) :-
+readMIDI(FileName, TimedEvents) :-
     open(FileName, read, Stream, [encoding(octet)]),
-    skipBytes(Stream, 22), % go to where the event starts
-    getEvents(Stream, Events).
+    skipBytes(Stream, 12), % go to where the ticks per beat information is
+    get_byte(Stream, Byte1),
+    get_byte(Stream, Byte2),
+    TicksPerBeat is Byte1 * 256 + Byte2,
+    write("What is the BPM?: "), nl,
+    read(BPM),
+    SecondPerTick is 1 / (TicksPerBeat * BPM / 60),
+    skipBytes(Stream, 8), % go to where the event starts
+    getEvents(Stream, Events),
+    convertEventTime(SecondPerTick, Events, TimedEvents).
 
-
+% convertEventTime(SecondPerTick, L1, L2) is true if L2 is a converted list of L1 such that
+% all elements of L2 has absolute time computed from delta time of its corresponding element in L1
+convertEventTime(SecondPerTick, [Event], [Event]).
+convertEventTime(SecondPerTick, [event(T1,M1,K1,V1),event(DT2,M2,K2,V2)|R], [event(T1,M1,K1,V1)|L]) :-
+    T2 is T1 + (DT2 * SecondPerTick),
+    convertEventTime(SecondPerTick, [event(T2,M2,K2,V2)|R], L).
 
 % PARSE MIDI FILE HELPERS
 % getEvents(Stream, List) is true when List contains all the events that begins from the stream pointer

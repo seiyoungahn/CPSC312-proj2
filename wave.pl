@@ -14,45 +14,79 @@ convertToWave(NotesArray, ResultFileName) :-
 	write("Your composition has been recorded"), nl,
 	write("Thanks for playing :)").
 
-
-
 % ERROR HANDLING
 % outputs a Wrong Format error message and stops execution
 wrongFormat :- write("Please provide notes within the range of 24 - 95."), nl, false.
 
-
-
 % INFORMATION RETRIEVAL
 % play the given array of notes and retrieve the WAV file header + data array
 playNotes([], _, []).
-playNotes([Note|NoteArray], Header, [Data|DataArray]) :-
-	getNoteData(Note, Header, Data),
-	playNotes(NoteArray, _, DataArray).
+playNotes([noteEvent(Note, Time)|[]], Header, [Data]) :-
+	getNoteData(Note, 1, Header, Data).
+playNotes([noteEvent(Note1, Time1), noteEvent(Note2, Time2)|NoteArray], Header, [Data|DataArray]) :-
+	Duration is Time2 - Time1,
+	getNoteData(Note1, Duration, Header, Data),
+	playNotes([noteEvent(Note2,Time2)|NoteArray], _, DataArray).
+
+% take(N1, C, N2) is true when N2 is a list that contains the first C elements of N1
+take(0, _, R) :- !, R = [].
+take(N, C, [H|R]) :-
+  call(C, [H|T]),
+  M is N-1,
+  take(M, T, R).
+
+% infinite list of zeros
+zero([0|zero]).
 
 % gets the header and data contents for the specified note 
-getNoteData(Note, NoteHeader, NoteData) :-
+getNoteData(Note, Duration, NoteHeader, FinalData) :-
+	Duration > 1,
 	% generate the file path string to retrieve the sample note data
-	string_concat("samples/", Note, FileName),
+	string_concat("samples_16/", Note, FileName),
 	string_concat(FileName, ".wav", FilePath),
 
 	% open the file in read mode
 	open(FilePath, read, Stream, [encoding(octet)]),
-
+	
 	% grab all parts of the file information - header, datasize and data
 	getHeader(Stream, NoteHeader),
 	getDataSize(Stream, _),
-	getData(Stream, NoteData),
+	getData(Stream, 176400, NoteData),
 
+	NumZeros is round(176400 * Duration - 176400),
+	NumZerosEven is NumZeros - NumZeros mod 2,
+
+	take(NumZerosEven, zero, Zeros),
+	append(NoteData, Zeros, FinalData),
 	% close the stream
 	close(Stream).
 
+getNoteData(Note, Duration, NoteHeader, NoteData) :-
+	Duration =< 1,
+	% generate the file path string to retrieve the sample note data
+	string_concat("samples_16/", Note, FileName),
+	string_concat(FileName, ".wav", FilePath),
 
+	% force the number of bytes to be even to prevent generating static noise
+	NumBytes is round(176400 * Duration),
+	NumBytesEven is NumBytes - NumBytes mod 2,
+
+	% open the file in read mode
+	open(FilePath, read, Stream, [encoding(octet)]),
+	
+	% grab all parts of the file information - header, datasize and data
+	getHeader(Stream, NoteHeader),
+	getDataSize(Stream, _),
+	getData(Stream, NumBytesEven, NoteData),
+
+	% close the stream
+	close(Stream).
 
 % INFORMATION RETRIEVAL HELPERS
 % gets the header, data size, and data sections from the specified stream 
 getHeader(Stream, Header) :- getBytes(732, Stream, Header).
 getDataSize(Stream, DataSize) :- getBytes(4, Stream, DataSize).
-getData(Stream, Data) :- getBytes(-1, Stream, Data).
+getData(Stream, NumBytes, Data) :- getBytes(NumBytes, Stream, Data).
 
 % getBytes(Number, Stream, BytesArray)
 %	 Number => number of bytes to read 
@@ -66,7 +100,6 @@ getBytes(Count, Stream, [X|R]) :-
 	Count2 is Count - 1,
 	get_byte(Stream, X),
 	getBytes(Count2, Stream, R).
-
 
 
 % OUTPUT HANDLING
