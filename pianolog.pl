@@ -54,7 +54,7 @@ convertToNote(Input, Note) :-
 	% convert the note from letter form into a number
 	note(Letter, LetterNum),
 	% calculate the corresponding note value
-	Note is (OctNum * 12 + 8) + LetterNum.
+	Note is (OctNum * 12 + 12) + LetterNum.
 
 % flat (b)
 convertToNote(Input, Note) :-
@@ -65,7 +65,7 @@ convertToNote(Input, Note) :-
 	% convert the note from letter form into a number
 	note(Letter, LetterNum),
 	% calculate the corresponding note value
-	Note is (OctNum * 12 + 8 - 1) + LetterNum.
+	Note is (OctNum * 12 + 12 - 1) + LetterNum.
 
 % sharp (#)
 convertToNote(Input, Note) :-
@@ -76,7 +76,7 @@ convertToNote(Input, Note) :-
 	% convert the note from letter form into a number
 	note(Letter, LetterNum),
 	% calculate the corresponding note value
-	Note is (OctNum * 12 + 8 + 1) + LetterNum.
+	Note is (OctNum * 12 + 12 + 1) + LetterNum.
 
 % relation of each note in an octave and its corresponding numerical value
 note('C', 0).
