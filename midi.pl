@@ -52,7 +52,7 @@ readMIDI(FileName, TimedEvents) :-
 
 % convertEventTime(SecondPerTick, L1, L2) is true if L2 is a converted list of L1 such that
 % all elements of L2 has absolute time computed from delta time of its corresponding element in L1
-convertEventTime(SecondPerTick, [Event], [Event]).
+convertEventTime(_, [Event], [Event]).
 convertEventTime(SecondPerTick, [event(T1,M1,K1,V1),event(DT2,M2,K2,V2)|R], [event(T1,M1,K1,V1)|L]) :-
     T2 is T1 + (DT2 * SecondPerTick),
     convertEventTime(SecondPerTick, [event(T2,M2,K2,V2)|R], L).

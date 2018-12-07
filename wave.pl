@@ -21,12 +21,22 @@ wrongFormat :- write("Please provide notes within the range of 24 - 95."), nl, f
 % INFORMATION RETRIEVAL
 % play the given array of notes and retrieve the WAV file header + data array
 playNotes([], _, []).
-playNotes([noteEvent(Note, Time)|[]], Header, [Data]) :-
+
+% play note events
+playNotes([noteEvent(Note, _)|[]], Header, [Data]) :-
 	getNoteData(Note, 1, Header, Data).
 playNotes([noteEvent(Note1, Time1), noteEvent(Note2, Time2)|NoteArray], Header, [Data|DataArray]) :-
 	Duration is Time2 - Time1,
 	getNoteData(Note1, Duration, Header, Data),
 	playNotes([noteEvent(Note2,Time2)|NoteArray], _, DataArray).
+
+% play regular notes
+playNotes([Note|[]], Header, [Data]) :-
+	getNoteData(Note, 0.5, Header, Data).
+playNotes([Note|NoteArray], Header, [Data|DataArray]) :-
+	getNoteData(Note, 0.5, Header, Data),
+	playNotes(NoteArray, _, DataArray).
+
 
 % take(N1, C, N2) is true when N2 is a list that contains the first C elements of N1
 take(0, _, R) :- !, R = [].
@@ -133,4 +143,3 @@ putBytes(Stream, [X]) :-
 putBytes(Stream, [X|R]) :-
 	put_byte(Stream, X),
 	putBytes(Stream, R).
-

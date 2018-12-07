@@ -103,6 +103,9 @@ transposeNotes([], _, []).
 transposeNotes([noteEvent(Note1, Time1)|NoteArray], TransposeBy, [noteEvent(Note2, Time1)|TransposedNoteArray]) :-
 	Note2 is Note1 + TransposeBy,
 	transposeNotes(NoteArray, TransposeBy, TransposedNoteArray).
+transposeNotes([Note1|NoteArray], TransposeBy, [Note2|TransposedNoteArray]) :-
+	Note2 is Note1 + TransposeBy,
+	transposeNotes(NoteArray, TransposeBy, TransposedNoteArray).
 
 % OUTPUT FILE NAME
 % allows the user to specify the name of the output file
@@ -110,3 +113,7 @@ outputFile(FilePath) :-
 	write("Please choose a name for the output file."), nl,
 	read(FileName),
 	string_concat(FileName, ".wav", FilePath).
+
+
+
+
